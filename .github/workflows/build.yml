@@ -25,5 +25,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            sonar.projectKey=ddanillu_python-project-83
-            sonar.organization=ddanillu-organization
+            -Dsonar.projectKey=ddanillu_python-project-83
+            -Dsonar.organization=ddanillu-organization
