@@ -3,10 +3,16 @@ from flask import Flask, request, redirect, url_for, flash, render_template
 from .db_manager import URL as u
 from .validator import validate_url
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(".env")
+except ModuleNotFoundError:
+    pass
+
 
 app = Flask(__name__)
 
-app.secret_key = os.getenv('SECRET_KEY')
+app.secret_key = os.getenv('SECRET_KEY') or 'default_secret'
 app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 
 @app.route("/")
