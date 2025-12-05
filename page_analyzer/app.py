@@ -25,22 +25,19 @@ def manage_urls():
     if request.method == 'POST':
         url = request.form['url']
         if not validate_url(url):
-            flash('Invalid URL! Please enter a valid URL not exceeding 255 characters.')
+            flash('Недопустимый URL! Пожалуйста, введите действительный URL длиной не более 255 символов')
             return redirect(url_for('index'))
         
-        existing_url_id = URL.get_id(url)
-        if existing_url_id is not None:
-            flash('This URL already exists in the database.')
+        existing_url_id = URL.url_exists(url)
+        if existing_url_id:
+            flash('Эта страница уже существует в базе данных')
             return redirect(url_for('show_url', id=existing_url_id))
-        
-        URL.add_to_urls(url)
-
-        url_id = URL.get_id(url)
-        if url_id is None:
-            flash('Error: Unable to retrieve the ID for the added URL.')
-            return redirect(url_for('index'))
         else:
-            flash('URL added successfully!')
+            url_id = URL.add_url_and_get_id(url)
+            if url_id is None:
+                flash('Ошибка: невозможно получить ID добавленной страницы')
+                return redirect(url_for('index'))
+            flash('Страница успешно добавлена')
             return redirect(url_for('show_url', id=url_id))
 
     urls = URL.get_all_urls()
@@ -51,10 +48,31 @@ def manage_urls():
 def show_url(id):
     url = URL.get_url(id)
     if url is None:
-        flash('URL not found.')
+        flash('Страница не найдена')
         return redirect(url_for('manage_urls'))
     
     return render_template('show_url.html', url=url)
+
+
+@app.route('/urls/<id>/checks')
+def check_url(id):
+    url_entry = URL.get_url(id)
+    if url_entry is None:
+        flash('Страница не найдена')
+        return redirect(url_for('manage_urls'))
+
+    flash('Страница успешно проверена')
+    return redirect(url_for('show_url', id=id))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 
 if __name__ == "__main__":

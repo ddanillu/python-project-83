@@ -29,35 +29,36 @@ class URL:
         self.created_at = created_at
 
     @staticmethod
-    def add_to_urls(url):
+    def add_url_and_get_id(url):
         conn = db_manager.get_connection()
         try:
             with conn.cursor() as curs:
-                curs.execute("INSERT INTO urls (name) VALUES (%s);", (url,))
+                curs.execute("INSERT INTO urls (name) VALUES (%s) RETURNING id;", (url,))
+                url_id = curs.fetchone()[0]
                 conn.commit()
+                return url_id
         except Exception as e:
             conn.rollback()
             print(f"Ошибка при добавлении URL: {e}")
-        finally:
-            db_manager.return_connection(conn)
-
-    @staticmethod
-    def get_id(url):
-        conn = db_manager.get_connection()
-        try:
-            with conn.cursor() as curs:
-                curs.execute("SELECT id FROM urls WHERE name=%s;", (url,))
-                result = curs.fetchone()
-                if result:
-                    return result[0]
-                else:
-                    print(f"URL '{url}' не найден.")
-                    return None
-        except Exception as e:
-            print(f"Ошибка при получении ID для URL '{url}': {e}")
             return None
         finally:
             db_manager.return_connection(conn)
+
+
+    @staticmethod
+    def url_exists(url):
+        conn = db_manager.get_connection()
+        try:
+            with conn.cursor() as curs:
+                curs.execute("SELECT EXISTS (SELECT id FROM urls WHERE name = %s);", (url,))
+                existing_id = curs.fetchone()[0]
+                return existing_id
+        except Exception as e:
+            print(f"Ошибка при проверке существования URL '{url}': {e}")
+            return False
+        finally:
+            db_manager.return_connection(conn)
+
 
     @staticmethod
     def get_all_urls():

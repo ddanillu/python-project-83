@@ -8,7 +8,7 @@ package-install:
 
 # Команда для запуска сервера в режиме разработки
 dev:
-	uv run flask --debug --app page_analyzer:app run
+	uv run flask --debug --app page_analyzer:app run --port=5778
 
 # Команда для линтинга с использованием ruff
 lint:
