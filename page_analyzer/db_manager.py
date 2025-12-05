@@ -1,5 +1,5 @@
-import psycopg2
 import os
+from psycopg2 import pool
 
 try:
     from dotenv import load_dotenv
@@ -7,9 +7,20 @@ try:
 except ModuleNotFoundError:
     pass
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
+class DatabaseManager:
+    def __init__(self):
+        self.connection_pool = pool.SimpleConnectionPool(1, 10, dsn=os.getenv('DATABASE_URL'))
 
+    def get_connection(self):
+        return self.connection_pool.getconn()
+
+    def return_connection(self, conn):
+        self.connection_pool.putconn(conn)
+
+    def close(self):
+        self.connection_pool.closeall()
+
+db_manager = DatabaseManager()
 
 class URL:
     def __init__(self, id, name, created_at):
@@ -19,6 +30,7 @@ class URL:
 
     @staticmethod
     def add_to_urls(url):
+        conn = db_manager.get_connection()
         try:
             with conn.cursor() as curs:
                 curs.execute("INSERT INTO urls (name) VALUES (%s);", (url,))
@@ -26,9 +38,12 @@ class URL:
         except Exception as e:
             conn.rollback()
             print(f"Ошибка при добавлении URL: {e}")
+        finally:
+            db_manager.return_connection(conn)
 
     @staticmethod
     def get_id(url):
+        conn = db_manager.get_connection()
         try:
             with conn.cursor() as curs:
                 curs.execute("SELECT id FROM urls WHERE name=%s;", (url,))
@@ -41,9 +56,12 @@ class URL:
         except Exception as e:
             print(f"Ошибка при получении ID для URL '{url}': {e}")
             return None
+        finally:
+            db_manager.return_connection(conn)
 
     @staticmethod
     def get_all_urls():
+        conn = db_manager.get_connection() 
         try:
             with conn.cursor() as curs:
                 curs.execute("SELECT * FROM urls ORDER BY created_at DESC;")
@@ -52,9 +70,12 @@ class URL:
         except Exception as e:
             print(f"Ошибка при получении всех URL: {e}")
             return []
+        finally:
+            db_manager.return_connection(conn)
 
     @staticmethod
     def get_url(url_id):
+        conn = db_manager.get_connection() 
         try:
             with conn.cursor() as curs:
                 curs.execute("SELECT * FROM urls WHERE id=%s;", (url_id,))
@@ -65,3 +86,5 @@ class URL:
         except Exception as e:
             print(f"Ошибка при получении URL с ID '{url_id}': {e}")
             return None
+        finally:
+            db_manager.return_connection(conn)

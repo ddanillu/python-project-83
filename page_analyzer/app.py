@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, redirect, url_for, flash, render_template
-from .db_manager import URL as u
+from .db_manager import URL
 from .validator import validate_url
 
 try:
@@ -28,14 +28,14 @@ def manage_urls():
             flash('Invalid URL! Please enter a valid URL not exceeding 255 characters.')
             return redirect(url_for('index'))
         
-        existing_url_id = u.get_id(url)
+        existing_url_id = URL.get_id(url)
         if existing_url_id is not None:
             flash('This URL already exists in the database.')
             return redirect(url_for('show_url', id=existing_url_id))
         
-        u.add_to_urls(url)
+        URL.add_to_urls(url)
 
-        url_id = u.get_id(url)
+        url_id = URL.get_id(url)
         if url_id is None:
             flash('Error: Unable to retrieve the ID for the added URL.')
             return redirect(url_for('index'))
@@ -43,13 +43,13 @@ def manage_urls():
             flash('URL added successfully!')
             return redirect(url_for('show_url', id=url_id))
 
-    urls = u.get_all_urls()
+    urls = URL.get_all_urls()
     return render_template('list_urls.html', urls=urls)
 
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    url = u.get_url(id)
+    url = URL.get_url(id)
     if url is None:
         flash('URL not found.')
         return redirect(url_for('manage_urls'))
