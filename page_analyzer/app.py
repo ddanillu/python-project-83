@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, redirect, url_for, flash, render_template
 from .db_manager import URL
 from .validator import validate_url
+from .checker import checking_url
 
 try:
     from dotenv import load_dotenv
@@ -41,7 +42,14 @@ def manage_urls():
             return redirect(url_for('show_url', id=url_id))
 
     urls = URL.get_all_urls()
-    return render_template('list_urls.html', urls=urls)
+    checks_data = {}
+
+    for url_entry in urls:
+        checks = URL.get_checks(url_entry.id)
+        last_check_code = checks[-1]['status_code'] if checks else ''
+        checks_data[url_entry.id] = last_check_code 
+
+    return render_template('list_urls.html', urls=urls, status_code=checks_data)
 
 
 @app.route('/urls/<int:id>')
@@ -51,17 +59,24 @@ def show_url(id):
         flash('Страница не найдена')
         return redirect(url_for('manage_urls'))
     
-    return render_template('show_url.html', url=url)
+    checks = URL.get_checks(id)
+    return render_template('show_url.html', url=url, checks=checks)
 
 
-@app.route('/urls/<id>/checks')
+@app.route('/urls/<id>/checks', methods=['POST'])
 def check_url(id):
     url_entry = URL.get_url(id)
     if url_entry is None:
         flash('Страница не найдена')
         return redirect(url_for('manage_urls'))
+    
+    status_code = checking_url(url_entry)
+    if status_code is None:
+        flash('Произошла ошибка при проверке')
+    else:
+        URL.add_check(id, status_code)
+        flash('Страница успешно проверена')
 
-    flash('Страница успешно проверена')
     return redirect(url_for('show_url', id=id))
 
 

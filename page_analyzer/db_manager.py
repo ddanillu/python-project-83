@@ -65,7 +65,7 @@ class URL:
         conn = db_manager.get_connection() 
         try:
             with conn.cursor() as curs:
-                curs.execute("SELECT * FROM urls ORDER BY created_at DESC;")
+                curs.execute("SELECT * FROM urls ORDER BY created_at DESC, id DESC;")
                 rows = curs.fetchall()
                 return [URL(*row) for row in rows]
         except Exception as e:
@@ -87,5 +87,45 @@ class URL:
         except Exception as e:
             print(f"Ошибка при получении URL с ID '{url_id}': {e}")
             return None
+        finally:
+            db_manager.return_connection(conn)
+
+    
+    @staticmethod
+    def add_check(url_id, status_code, h1="", title="", description=""):
+        conn = db_manager.get_connection()
+        try:
+            with conn.cursor() as curs:
+                curs.execute("""
+                    INSERT INTO url_checks (url_id, status_code, h1, title, description) 
+                    VALUES (%s, %s, %s, %s, %s);
+                """, (url_id, status_code, h1, title, description))
+                conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print(f"Ошибка при добавлении проверки для URL ID '{url_id}': {e}")
+        finally:
+            db_manager.return_connection(conn)
+
+
+
+    @staticmethod
+    def get_checks(url_id):
+        conn = db_manager.get_connection()
+        try:
+            with conn.cursor() as curs:
+                curs.execute("SELECT * FROM url_checks WHERE url_id = %s ORDER BY created_at DESC, id DESC;", (url_id,))
+                rows = curs.fetchall()
+                return [{
+                    'id': row[0],
+                    'status_code': row[2],
+                    'h1': row[3],
+                    'title': row[4],
+                    'description': row[5],
+                    'created_at': row[6]
+                } for row in rows]
+        except Exception as e:
+            print(f"Ошибка при получении проверок для URL ID '{url_id}': {e}")
+            return []
         finally:
             db_manager.return_connection(conn)
