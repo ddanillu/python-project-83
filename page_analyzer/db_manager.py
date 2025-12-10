@@ -61,7 +61,22 @@ class URL:
 
 
     @staticmethod
+    def clear_old_urls():
+        conn = db_manager.get_connection()
+        try:
+            with conn.cursor() as curs:
+                curs.execute("DELETE FROM urls WHERE created_at < NOW() - INTERVAL '1 day';")
+                conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print(f"Ошибка при очистке старых URL: {e}")
+        finally:
+            db_manager.return_connection(conn)
+
+
+    @staticmethod
     def get_all_urls():
+        URL.clear_old_urls()
         conn = db_manager.get_connection() 
         try:
             with conn.cursor() as curs:
