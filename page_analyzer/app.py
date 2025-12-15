@@ -23,6 +23,15 @@ def index():
 
 @app.route('/urls', methods=['GET', 'POST'])
 def manage_urls():
+    """
+    Обрабатывает добавление новых URL и отображает список существующих.
+
+    При POST-запросе: 
+    - Получает URL из формы.
+    - Проверяет его на валидность с помощью функции validate_url.
+    - Если URL уже существует, перенаправляет на страницу с ним.
+    - Если URL новый, добавляет его в БД и перенаправляет на его страницу.
+    """
     if request.method == 'POST':
         url = request.form['url']
         if not validate_url(url):
@@ -46,10 +55,15 @@ def manage_urls():
 
     for url_entry in urls:
         checks = URL.get_checks(url_entry.id)
-        last_check_code = checks[-1]['status_code'] if checks else ''
-        checks_data[url_entry.id] = last_check_code 
+        last_check = checks[0]
+        last_check_code = last_check['status_code'] if checks else ''
+        last_check_date = last_check['created_at'] if checks else ''
+        checks_data[url_entry.id] = {
+            'status_code': last_check_code,
+            'check_date': last_check_date
+        }
 
-    return render_template('list_urls.html', urls=urls, status_code=checks_data)
+    return render_template('list_urls.html', urls=urls, checks_data=checks_data)
 
 
 @app.route('/urls/<int:id>')
@@ -70,11 +84,17 @@ def check_url(id):
         flash('Страница не найдена')
         return redirect(url_for('manage_urls'))
     
-    status_code = checking_url(url_entry)
-    if status_code is None:
+    check_data = checking_url(url_entry)
+    if check_data is None:
         flash('Произошла ошибка при проверке')
     else:
-        URL.add_check(id, status_code)
+        URL.add_check(
+            id,
+            check_data['code'],
+            check_data['h1'],
+            check_data['title'],
+            check_data['meta_description']
+            )
         flash('Страница успешно проверена')
 
     return redirect(url_for('show_url', id=id))
