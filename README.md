@@ -1,6 +1,6 @@
 # Page Analyzer
 
-Веб-приложение для анализа веб-страниц. Позволяет добавлять URL-адреса, проверять их доступность и извлекать метаданные (заголовок, описание, H1).
+Веб-приложение для анализа веб-страниц. Позволяет проверять доступность URL-адреса и извлекать метаданные (заголовок, описание, H1).
 
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/ddanillu/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/ddanillu/python-project-83/actions)
@@ -11,7 +11,7 @@
 [![Build](https://github.com/ddanillu/python-project-83/actions/workflows/build.yml/badge.svg)](https://github.com/ddanillu/python-project-83/actions/workflows/build.yml)
 
 ### Available Application
-You can see the results at the following address:
+Здесь вы можете посмотреть результат:
 [Link to the application](https://python-project-83-97a4.onrender.com)
 
 ## Описание
@@ -103,29 +103,6 @@ PORT=8989 make start
 2. **Просмотр списка**: Перейдите на страницу `/urls` для просмотра всех добавленных URL
 3. **Проверка URL**: На странице конкретного URL нажмите кнопку "Проверить" для выполнения анализа
 4. **Просмотр истории**: На странице URL отображается история всех проверок с метаданными
-
-## Структура проекта
-
-```
-python-project-83/
-├── page_analyzer/          # Основной пакет приложения
-│   ├── __init__.py
-│   ├── app.py              # Flask-приложение и маршруты
-│   ├── db_manager.py       # Работа с базой данных
-│   ├── checker.py          # Проверка URL и извлечение метаданных
-│   ├── validator.py        # Валидация URL
-│   └── templates/          # HTML-шаблоны
-│       ├── index.html
-│       ├── list_urls.html
-│       ├── show_url.html
-│       └── ...
-├── db/
-│   └── database.sql        # SQL-схема базы данных
-├── pyproject.toml          # Конфигурация проекта и зависимости
-├── Makefile                # Команды для разработки
-├── build.sh                # Скрипт сборки
-└── README.md
-```
 
 ## API Endpoints
 
