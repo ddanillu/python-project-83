@@ -1,5 +1,6 @@
 import os
 from psycopg2 import pool
+from urllib.parse import urlparse
 
 try:
     from dotenv import load_dotenv
@@ -50,9 +51,15 @@ class URL:
         conn = db_manager.get_connection()
         try:
             with conn.cursor() as curs:
-                curs.execute("SELECT id FROM urls WHERE name = %s;", (url,))
-                existing_id = curs.fetchone()[0]
-                return existing_id
+                parsed = urlparse(url)
+                host = parsed.netloc.lower()
+                
+                curs.execute(
+                    "SELECT id FROM urls WHERE name LIKE %s;", 
+                    (f"%://{host}%",)
+                )
+                result = curs.fetchone()
+                return result[0] if result else False
         except Exception as e:
             print(f"Ошибка при проверке существования URL '{url}': {e}")
             return False
