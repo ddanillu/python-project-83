@@ -55,13 +55,17 @@ def manage_urls():
 
     for url_entry in urls:
         checks = URL.get_checks(url_entry.id)
-        last_check = checks[0]
-        last_check_code = last_check['status_code'] if checks else ''
-        last_check_date = last_check['created_at'] if checks else ''
-        checks_data[url_entry.id] = {
-            'status_code': last_check_code,
-            'check_date': last_check_date
-        }
+        if checks:
+            last_check = checks[0]
+            checks_data[url_entry.id] = {
+                'status_code': last_check['status_code'],
+                'check_date': last_check['created_at']
+            }
+        else:
+            checks_data[url_entry.id] = {
+                'status_code': '',
+                'check_date': ''
+            }
 
     return render_template('list_urls.html', urls=urls, checks_data=checks_data)
 
