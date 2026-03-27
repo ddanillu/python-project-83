@@ -2,6 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 
 
+def truncate(text, max_len):
+    if len(text) > max_len:
+        return text[:max_len-3] + '...'
+    return text
+
+
 def checking_url(url):
     """
     Проверяет доступность указанного URL и извлекает его метаданные.
@@ -31,10 +37,14 @@ def checking_url(url):
         r.raise_for_status()
 
         soup = BeautifulSoup(r.content, 'html.parser')
-        h1_content = soup.find('h1').text if soup.find('h1') else ""
-        title_content = soup.title.string if soup.find('title') else ""
+        h1_full = soup.find('h1').text if soup.find('h1') else ""
+        title_full = soup.title.string if soup.find('title') else ""
         meta_description = soup.find('meta', attrs={'name': 'description'})
-        meta_content = meta_description['content'] if meta_description else ""
+        desc_full = meta_description['content'] if meta_description else ""
+
+        h1_content = truncate(h1_full, 100)
+        title_content = truncate(title_full, 60)
+        meta_content = truncate(desc_full, 300)
 
         data = {
             'code': r.status_code,
