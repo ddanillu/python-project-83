@@ -36,7 +36,8 @@ def manage_urls():
         url = request.form['url']
         if not validate_url(url):
             flash('Некорректный URL')
-            return redirect(url_for('index'))
+            urls = URL.get_all_urls()
+            return render_template('list_urls.html', urls=urls), 422
         
         existing_url_id = URL.url_exists(url)
         if existing_url_id:
