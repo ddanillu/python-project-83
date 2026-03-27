@@ -37,10 +37,15 @@ def checking_url(url):
         r.raise_for_status()
 
         soup = BeautifulSoup(r.content, 'html.parser')
-        h1_full = soup.find('h1').text if soup.find('h1') else ""
-        title_full = soup.title.string if soup.find('title') else ""
+        h1_tag = soup.find('h1')
+        h1_full = h1_tag.text.strip() if h1_tag and h1_tag.text else ""
+
+        title_tag = soup.find('title')
+        title_full = title_tag.string.strip() if title_tag and title_tag.string else ""
+
         meta_description = soup.find('meta', attrs={'name': 'description'})
-        desc_full = meta_description['content'] if meta_description else ""
+        desc_full = (meta_description['content'].strip() 
+                    if meta_description and meta_description.get('content') else "")
 
         h1_content = truncate(h1_full, 100)
         title_content = truncate(title_full, 60)
