@@ -12,7 +12,7 @@ dev:
 
 # Команда для линтинга с использованием ruff
 lint:
-	uv run ruff check
+	uv run ruff check .
 
 # Конфигурация порта со значением по умолчанию
 PORT ?= 8989
