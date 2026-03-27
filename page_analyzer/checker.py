@@ -47,9 +47,9 @@ def checking_url(url):
         desc_full = (meta_description['content'].strip() 
                     if meta_description and meta_description.get('content') else "")
 
-        h1_content = truncate(h1_full, 100)
-        title_content = truncate(title_full, 60)
-        meta_content = truncate(desc_full, 300)
+        h1_content = truncate(h1_full,200)
+        title_content = truncate(title_full, 200)
+        meta_content = truncate(desc_full, 200)
 
         data = {
             'code': r.status_code,
