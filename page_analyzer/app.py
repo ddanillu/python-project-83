@@ -35,12 +35,12 @@ def manage_urls():
     if request.method == 'POST':
         url = request.form['url']
         if not validate_url(url):
-            flash('Недопустимый URL! Пожалуйста, введите действительный URL длиной не более 255 символов')
+            flash('Некорректный URL')
             return redirect(url_for('index'))
         
         existing_url_id = URL.url_exists(url)
         if existing_url_id:
-            flash('Эта страница уже существует в базе данных')
+            flash('Страница уже существует')
             return redirect(url_for('show_url', id=existing_url_id))
         else:
             url_id = URL.add_url_and_get_id(url)
