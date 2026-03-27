@@ -21,6 +21,25 @@ def index():
     return render_template("index.html")
 
 
+def get_urls_with_checks():
+    urls = URL.get_all_urls() or []
+    checks_data = {}
+    for url_entry in urls:
+        checks = URL.get_checks(url_entry.id) or []
+        if checks:
+            last_check = checks[0]
+            checks_data[url_entry.id] = {
+                'status_code': last_check['status_code'],
+                'check_date': last_check['created_at']
+            }
+        else:
+            checks_data[url_entry.id] = {
+                'status_code': '',
+                'check_date': ''
+            }
+    return urls, checks_data
+
+
 @app.route('/urls', methods=['GET', 'POST'])
 def manage_urls():
     """
@@ -36,8 +55,8 @@ def manage_urls():
         url = request.form['url']
         if not validate_url(url):
             flash('Некорректный URL')
-            urls = URL.get_all_urls()
-            return render_template('list_urls.html', urls=urls), 422
+            urls, checks_data = get_urls_with_checks()
+            return render_template('list_urls.html', urls=urls, checks_data=checks_data), 422
         
         existing_url_id = URL.url_exists(url)
         if existing_url_id:
@@ -51,23 +70,7 @@ def manage_urls():
             flash('Страница успешно добавлена')
             return redirect(url_for('show_url', id=url_id))
 
-    urls = URL.get_all_urls()
-    checks_data = {}
-
-    for url_entry in urls:
-        checks = URL.get_checks(url_entry.id)
-        if checks:
-            last_check = checks[0]
-            checks_data[url_entry.id] = {
-                'status_code': last_check['status_code'],
-                'check_date': last_check['created_at']
-            }
-        else:
-            checks_data[url_entry.id] = {
-                'status_code': '',
-                'check_date': ''
-            }
-
+    urls, checks_data = get_urls_with_checks()
     return render_template('list_urls.html', urls=urls, checks_data=checks_data)
 
 
